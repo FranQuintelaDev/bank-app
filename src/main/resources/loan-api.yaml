@@ -1,0 +1,172 @@
+openapi: 3.0.0
+info:
+    title: Loan Request API
+    version: 1.0.0
+    description: API for submitting and managing loan requests.
+paths:
+  /loans:
+    get:
+      summary: Retrieve all loan requests with pagination
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Page number (zero-based)
+        - in: query
+          name: size
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+          description: Number of items per page
+        - in: query
+          name: sort
+          schema:
+            type: string
+            default: id
+          description: Field to sort by (e.g., id, amount, applicationDate)
+        - in: query
+          name: direction
+          schema:
+            type: string
+            enum: [ ASC, DESC ]
+            default: ASC
+          description: Sort direction
+      responses:
+        '200':
+          description: A paginated list of loan requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedLoanResponse'
+    post:
+        summary: Submit a new loan request
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanRequestDto'
+        responses:
+            '201':
+                description: Loan request created successfully
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LoanRequestDto'
+  /loans/{id}:
+    get:
+      summary: Retrieve a specific loan request by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested loan request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanRequestDto'
+        '404':
+          description: Loan request not found
+    patch:
+      summary: Update a specific loan request by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanRequestDto'
+      responses:
+        '200':
+          description: Loan request updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanRequestDto'
+        '404':
+          description: Loan request not found
+
+components:
+    schemas:
+        LoanRequestDto:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Unique identifier for the loan request
+                applicantName:
+                    type: string
+                    description: Name of the loan applicant
+                amount:
+                    type: number
+                    format: float
+                    description: Amount of loan requested
+                    minimum: 0.01
+                    maximum: 1000000
+                currency:
+                    type: string
+                    description: Currency of the loan amount (e.g., USD, EUR)
+                applicationDate:
+                    type: string
+                    format: date-time
+                    description: Date when the loan application was submitted
+                identificationNumber:
+                    type: string
+                    description: Identification number of the applicant
+                status:
+                  $ref: '#/components/schemas/LoanStatusDto'
+            required:
+                - applicantName
+                - amount
+                - currency
+                - applicationDate
+                - identificationNumber
+        UpdateLoanRequestDto:
+          type: object
+          properties:
+            status:
+              $ref: '#/components/schemas/LoanStatusDto'
+        LoanStatusDto:
+                type: string
+                description: Status of the loan request
+                enum: [ PENDING, APPROVED, REJECTED, CANCELED ]
+        PagedLoanResponse:
+                  type: object
+                  properties:
+                    content:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/LoanRequestDto'
+                    page:
+                      type: integer
+                      description: Current page number
+                    size:
+                      type: integer
+                      description: Number of items per page
+                    totalElements:
+                      type: integer
+                      format: int64
+                      description: Total number of elements
+                    totalPages:
+                      type: integer
+                      description: Total number of pages
+                    first:
+                      type: boolean
+                      description: Whether this is the first page
+                    last:
+                      type: boolean
+                      description: Whether this is the last page
