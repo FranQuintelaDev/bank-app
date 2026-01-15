@@ -1,4 +1,4 @@
-package com.demo.bank_app.domain.port.out;
+package com.demo.bank_app.domain.port;
 
 import com.demo.bank_app.domain.model.LoanRequest;
 import com.demo.bank_app.domain.model.LoanRequestStatus;

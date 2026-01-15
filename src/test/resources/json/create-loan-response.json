@@ -1,0 +1,10 @@
+{
+  "id": "${json-unit.any-string}",
+  "applicantName": "Demo User",
+  "amount": 100.0,
+  "currency": "EUR",
+  "identificationNumber": "123456789R",
+  "applicationDate": "${json-unit.any-string}",
+  "status": "PENDING"
+}
+
