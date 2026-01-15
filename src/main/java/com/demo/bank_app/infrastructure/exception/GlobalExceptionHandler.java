@@ -1,6 +1,7 @@
 package com.demo.bank_app.infrastructure.exception;
 
 import com.demo.bank_app.domain.exception.InvalidLoanRequestException;
+import com.demo.bank_app.domain.exception.InvalidStateTransitionException;
 import com.demo.bank_app.domain.exception.LoanNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -26,6 +27,14 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleInvalidLoanRequestException(InvalidLoanRequestException e) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
         problemDetail.setTitle("Invalid Loan Request");
+        problemDetail.setProperty("timestamp", Instant.now());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(InvalidStateTransitionException.class)
+    public ProblemDetail handleInvalidStateTransitionException(InvalidStateTransitionException e) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+        problemDetail.setTitle("Invalid State Transition");
         problemDetail.setProperty("timestamp", Instant.now());
         return problemDetail;
     }

@@ -1,4 +1,5 @@
 package com.demo.bank_app.domain.model;
+import com.demo.bank_app.domain.exception.InvalidStateTransitionException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -46,30 +47,85 @@ public class LoanRequest {
         this.status = LoanRequestStatus.PENDING;
     }
 
+    public LoanRequest(Long id, String applicantName, Double amount, String currency, String identificationNumber, Date applicationDate, LoanRequestStatus status) {
+        this.id = id;
+        this.applicantName = applicantName;
+        this.amount = amount;
+        this.currency = currency;
+        this.identificationNumber = identificationNumber;
+        this.applicationDate = applicationDate;
+        this.status = status;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
     public void setId(Long id) {this.id = id;}
+
+    public String getApplicantName() {
+        return applicantName;
+    }
 
     public void setApplicantName(String applicantName) {
         this.applicantName = applicantName;
+    }
+
+    public Double getAmount() {
+        return amount;
     }
 
     public void setAmount(Double amount) {
         this.amount = amount;
     }
 
+    public String getCurrency() {
+        return currency;
+    }
+
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getIdentificationNumber() {
+        return identificationNumber;
     }
 
     public void setIdentificationNumber(String identificationNumber) {
         this.identificationNumber = identificationNumber;
     }
 
+    public Date getApplicationDate() {
+        return applicationDate;
+    }
+
     public void setApplicationDate(Date applicationDate) {
         this.applicationDate = applicationDate;
     }
 
+    public LoanRequestStatus getStatus() {
+        return status;
+    }
+
     public void setStatus(LoanRequestStatus status) {
         this.status = status;
+    }
+
+    public void updateStatus(LoanRequestStatus newStatus) {
+        if (!isValidTransition(this.status, newStatus)) {
+            throw new InvalidStateTransitionException(this.status, newStatus);
+        }
+
+        this.status = newStatus;
+    }
+
+
+    private boolean isValidTransition(LoanRequestStatus currentStatus, LoanRequestStatus newStatus) {
+        return switch (currentStatus) {
+            case PENDING -> newStatus == LoanRequestStatus.APPROVED || newStatus == LoanRequestStatus.REJECTED;
+            case APPROVED -> newStatus == LoanRequestStatus.CANCELLED;
+            case REJECTED, CANCELLED -> false;
+        };
     }
 
     @Override

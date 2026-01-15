@@ -29,6 +29,8 @@ public class LoanRequestMapper {
                 domain.getApplicationDate() == null ? null : domain.getApplicationDate().toInstant().atOffset(ZoneOffset.UTC),
                 domain.getIdentificationNumber()
         );
+        dto.setId(domain.getId() != null ? domain.getId().toString() : null);
+        dto.setStatus(toDtoStatus(domain.getStatus()));
         return dto;
     }
     public LoanRequestStatus toDomainStatus(LoanStatusDto statusEnum) {
