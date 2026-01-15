@@ -40,7 +40,7 @@ public class LoanRequestService implements LoanRequestUseCase {
         if (loanRequest == null) {
             throw new IllegalArgumentException("LoanRequest not found with id: " + id);
         }
-        loanRequest.setStatus(status);
-        return this.loanRequestRepository.updateStatus(id, status);
+        loanRequest.updateStatus(status);
+        return this.loanRequestRepository.save(loanRequest);
     }
 }

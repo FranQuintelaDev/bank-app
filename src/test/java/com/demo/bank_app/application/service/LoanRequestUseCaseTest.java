@@ -67,7 +67,7 @@ public class LoanRequestUseCaseTest {
         // Assert
         assertNotNull(foundLoanRequest);
         assertEquals(loanRequest, foundLoanRequest);
-        verify(loanRequestRepository, times(2)).findById(1L); // Called twice in service
+        verify(loanRequestRepository, times(2)).findById(1L);
     }
 
     @Test
@@ -94,15 +94,16 @@ public class LoanRequestUseCaseTest {
         // Arrange
         loanRequest.setId(1L);
         when(loanRequestRepository.findById(1L)).thenReturn(loanRequest);
-        when(loanRequestRepository.updateStatus(1L, LoanRequestStatus.APPROVED)).thenReturn(loanRequest);
+        when(loanRequestRepository.save(any(LoanRequest.class))).thenReturn(loanRequest);
 
         // Act
         LoanRequest updatedLoanRequest = loanRequestService.updateStatus(1L, LoanRequestStatus.APPROVED);
 
         // Assert
         assertNotNull(updatedLoanRequest);
+        assertEquals(LoanRequestStatus.APPROVED, updatedLoanRequest.getStatus());
         verify(loanRequestRepository, times(1)).findById(1L);
-        verify(loanRequestRepository, times(1)).updateStatus(1L, LoanRequestStatus.APPROVED);
+        verify(loanRequestRepository, times(1)).save(loanRequest);
     }
 
     @Test
