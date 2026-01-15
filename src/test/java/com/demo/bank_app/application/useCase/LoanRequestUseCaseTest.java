@@ -1,8 +1,10 @@
-package com.demo.bank_app.application.service;
+package com.demo.bank_app.application.useCase;
 
+import com.demo.bank_app.domain.exception.InvalidLoanRequestException;
+import com.demo.bank_app.domain.exception.LoanNotFoundException;
 import com.demo.bank_app.domain.model.LoanRequest;
 import com.demo.bank_app.domain.model.LoanRequestStatus;
-import com.demo.bank_app.domain.port.out.LoanRequestRepository;
+import com.demo.bank_app.domain.port.LoanRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +30,7 @@ public class LoanRequestUseCaseTest {
     private LoanRequestRepository loanRequestRepository;
 
     @InjectMocks
-    private LoanRequestService loanRequestService;
+    private LoanRequestUseCaseImpl loanRequestService;
 
     private LoanRequest loanRequest;
 
@@ -67,7 +69,42 @@ public class LoanRequestUseCaseTest {
         // Assert
         assertNotNull(foundLoanRequest);
         assertEquals(loanRequest, foundLoanRequest);
-        verify(loanRequestRepository, times(2)).findById(1L);
+        verify(loanRequestRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void findById_WithString_ShouldReturnLoanRequest_WhenExists() {
+        // Arrange
+        when(loanRequestRepository.findById(1L)).thenReturn(loanRequest);
+
+        // Act
+        LoanRequest foundLoanRequest = loanRequestService.findById("1");
+
+        // Assert
+        assertNotNull(foundLoanRequest);
+        assertEquals(loanRequest, foundLoanRequest);
+        verify(loanRequestRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void findById_WithInvalidString_ShouldThrowInvalidLoanRequestException() {
+        // Act & Assert
+        assertThrows(InvalidLoanRequestException.class, () ->
+                loanRequestService.findById("invalid-id")
+        );
+        verify(loanRequestRepository, never()).findById(anyLong());
+    }
+
+    @Test
+    void findById_ShouldThrowLoanNotFoundException_WhenNotExists() {
+        // Arrange
+        when(loanRequestRepository.findById(999L)).thenReturn(null);
+
+        // Act & Assert
+        assertThrows(LoanNotFoundException.class, () ->
+                loanRequestService.findById(999L)
+        );
+        verify(loanRequestRepository, times(1)).findById(999L);
     }
 
     @Test
@@ -107,15 +144,39 @@ public class LoanRequestUseCaseTest {
     }
 
     @Test
+    void updateStatus_WithString_ShouldUpdateStatus_WhenLoanRequestExists() {
+        // Arrange
+        loanRequest.setId(1L);
+        when(loanRequestRepository.findById(1L)).thenReturn(loanRequest);
+        when(loanRequestRepository.save(any(LoanRequest.class))).thenReturn(loanRequest);
+
+        // Act
+        LoanRequest updatedLoanRequest = loanRequestService.updateStatus("1", LoanRequestStatus.APPROVED);
+
+        // Assert
+        assertNotNull(updatedLoanRequest);
+        assertEquals(LoanRequestStatus.APPROVED, updatedLoanRequest.getStatus());
+    }
+
+    @Test
+    void updateStatus_WithInvalidString_ShouldThrowInvalidLoanRequestException() {
+        // Act & Assert
+        assertThrows(InvalidLoanRequestException.class, () ->
+                loanRequestService.updateStatus("invalid-id", LoanRequestStatus.APPROVED)
+        );
+        verify(loanRequestRepository, never()).findById(anyLong());
+    }
+
+    @Test
     void updateStatus_ShouldThrowException_WhenLoanRequestNotFound() {
         // Arrange
         when(loanRequestRepository.findById(999L)).thenReturn(null);
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(LoanNotFoundException.class, () ->
                 loanRequestService.updateStatus(999L, LoanRequestStatus.APPROVED)
         );
         verify(loanRequestRepository, times(1)).findById(999L);
-        verify(loanRequestRepository, never()).updateStatus(anyLong(), any());
+        verify(loanRequestRepository, never()).save(any());
     }
 }
